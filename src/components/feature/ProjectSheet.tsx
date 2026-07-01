@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { projects } from "@/mocks/projects";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Project = (typeof projects)[number];
 
