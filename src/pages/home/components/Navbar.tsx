@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useUI } from "@/context/UIContext";
 
 
 const links = [
@@ -17,6 +18,7 @@ interface NavbarProps {
 type MenuPhase = "hidden" | "mounting" | "open" | "leaving";
 
 export default function Navbar({ variant = "light" }: NavbarProps) {
+   const { setOverlayOpen } = useUI();
   const [phase, setPhase] = useState<MenuPhase>("hidden");
   const location = useLocation();
   const lock = useRef(false);
@@ -26,35 +28,40 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
   const isVisible = phase === "mounting" || phase === "open" || phase === "leaving";
 
   /* ── Abrir con frame-flush para forzar la transición ── */
-  const openMenu = useCallback(() => {
-    if (lock.current) return;
-    lock.current = true;
+const openMenu = useCallback(() => {
+  if (lock.current) return;
+  lock.current = true;
 
-    // 1. Montar en estado inicial (todo desplazado, sin la clase .open)
-    setPhase("mounting");
+  setOverlayOpen(true);
 
-    // 2. Esperar al siguiente frame de paint del browser
+  // 1. Montar en estado inicial
+  setPhase("mounting");
+
+  // 2. Esperar al siguiente frame
+  requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        // 3. Ahora sí aplicar .open → el browser detecta el cambio y anima
-        setPhase("open");
-        lock.current = false;
-      });
+      // 3. Abrir
+      setPhase("open");
+      lock.current = false;
     });
-  }, []);
+  });
+}, [setOverlayOpen]);
 
   /* ── Cerrar con animación de salida ── */
   const closeMenu = useCallback(() => {
-    if (lock.current || phase !== "open") return;
-    lock.current = true;
+  if (lock.current || phase !== "open") return;
+  lock.current = true;
 
-    setPhase("leaving");
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      setPhase("hidden");
-      lock.current = false;
-    }, 550);
-  }, [phase]);
+  setPhase("leaving");
+
+  if (timer.current) clearTimeout(timer.current);
+
+  timer.current = setTimeout(() => {
+    setPhase("hidden");
+    setOverlayOpen(false);
+    lock.current = false;
+  }, 550);
+}, [phase, setOverlayOpen]);
 
   /* ── Toggle inteligente ── */
   const toggleMenu = useCallback(() => {

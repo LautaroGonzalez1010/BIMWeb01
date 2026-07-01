@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import { useUI } from "@/context/UIContext";
 
 export default function ScrollTopButton() {
+  const { overlayOpen } = useUI();
+
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -43,11 +46,11 @@ export default function ScrollTopButton() {
         justify-center
         transition-all
         duration-300
-        ease-out
+        ease-[cubic-bezier(0.22,1,0.36,1)]
         ${
-          visible
-            ? "opacity-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 translate-y-4 pointer-events-none"
+          visible && !overlayOpen
+            ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
+            : "opacity-0 translate-y-4 scale-90 pointer-events-none"
         }
       `}
     >

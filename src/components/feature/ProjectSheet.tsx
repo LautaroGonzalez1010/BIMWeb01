@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import type { projects } from "@/mocks/projects";
 import { motion, AnimatePresence } from "framer-motion";
+import { useUI } from "@/context/UIContext";
+
 
 type Project = (typeof projects)[number];
 
@@ -10,17 +12,31 @@ interface ProjectSheetProps {
 }
 
 export default function ProjectSheet({ project, onClose }: ProjectSheetProps) {
+
+  const { setOverlayOpen } = useUI();
+
+  useEffect(() => {
+    setOverlayOpen(true);
+
+    return () => {
+      setOverlayOpen(false);
+    };
+  }, [setOverlayOpen]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
+
     window.addEventListener("keydown", onKey);
+
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
     return () => {
       document.body.style.overflow = prev;
     };
